@@ -13,10 +13,6 @@ export const ProtectRouet = [
     try {
       const { userId: clerkId } = getAuth(req);
 
-      if (!clerkId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
       const user = await User.findOne({ clerkId });
 
       if (!user) {
