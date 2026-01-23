@@ -6,7 +6,7 @@ export type AuthRequest = Request & {
   userId?: string;
 };
 
-export const ProtectRouet = [
+export const ProtectRoute = [
   requireAuth(),
 
   async (req: AuthRequest, res: Response, next: NextFunction) => {
