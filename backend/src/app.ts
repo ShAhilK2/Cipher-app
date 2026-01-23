@@ -5,6 +5,7 @@ import messageRoutes from "./routes/messageRoutes.ts";
 import userRoutes from "./routes/userRoutes.ts";
 import { clerkMiddleware } from "@clerk/express";
 import { errorHandler } from "./middleware/errorHandler.ts";
+import path from "path";
 
 const app = express();
 
@@ -27,5 +28,15 @@ app.use("/api/users", userRoutes);
 // error handler mustome after all the routes and other middlwewares so they can catch errors passed with next(err)
 // or thrown nside asynsc handlers
 app.use(errorHandler);
+
+// serve frontendin production
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../../web/dist")));
+
+  app.get("/{*any}", (_req, res) => {
+    res.sendFile(path.join(__dirname, "../../web/dist/index.html"));
+  });
+}
 
 export default app;
