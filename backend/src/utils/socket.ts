@@ -5,10 +5,6 @@ import { verifyToken } from "@clerk/express";
 import { Chat } from "../models/Chat";
 import { Message } from "../models/Message";
 
-interface SocketWithUserId extends Socket {
-  userId: string;
-}
-
 // store online users in memory : userId -> socketId
 export const onlineUsers = new Map<string, string>();
 
@@ -17,8 +13,8 @@ export const initilizeSocket = (httpServer: HttpServer) => {
   const allowedOrigins = [
     "http://localhost:5173",
     "https://localhost:8081",
-    process.env.FRONTEND_URL!, //production
-  ];
+    process.env.FRONTEND_URL, //production
+  ].filter(Boolean) as string[];
   const io = new SocketServer(httpServer, {
     cors: {
       origin: allowedOrigins,
@@ -45,7 +41,7 @@ export const initilizeSocket = (httpServer: HttpServer) => {
         return next(new Error("User not found"));
       }
 
-      (socket as SocketWithUserId).userId = user._id.toString();
+      socket.data.userId = user._id.toString();
 
       next();
     } catch (error: any) {
@@ -57,7 +53,7 @@ export const initilizeSocket = (httpServer: HttpServer) => {
   //   it's the event that is triggered when a new client connects to the server
 
   io.on("connection", (socket) => {
-    const userId = (socket as SocketWithUserId).userId;
+    const userId = socket.data.userId;
 
     // send list of currently online users to the newly connected client
     socket.emit("online-users", { userIds: Array.from(onlineUsers.keys()) });
@@ -106,7 +102,7 @@ export const initilizeSocket = (httpServer: HttpServer) => {
           chat.lastMessageAt = new Date();
 
           await chat.save();
-          await message.populate("sender", "name email avatar");
+          await message.populate("sender", "name  avatar");
 
           //   emit to chat room (for users inside the chat)
 
